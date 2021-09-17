@@ -1,11 +1,9 @@
-require("dotenv").config();
-global.api_key = process.env.ALPHA_API_KEY;
-
 const createError = require("http-errors");
 const express = require("express");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
+require("dotenv").config();
 
 const app = express();
 const http = require("http");
