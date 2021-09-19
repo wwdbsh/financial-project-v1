@@ -1,5 +1,4 @@
-const { baseURL, router, axios, apiKey } = require("../util/common");
-const { StringStream } = require("scramjet");
+const { baseURL, router, axios, apiKey, successLog, failLog } = require("../util/common");
 
 router.get('/', function(req, res) {
     res.send("stock time series");
@@ -19,22 +18,23 @@ router.get("/time-series-intraday-data", async (req, res) => {
      `interval=${interval}&` +
      `apikey=${apiKey}`
      ;
-    
     try{
         const { data } = await axios.get(url);
         if(data[`Time Series (${interval})`]){
+            successLog("GET", "time-series-intraday-data");
             res.status(200).json({
-                RESULT:"SUCCESS",
-                TIME_SERIES_DATA:data[`Time Series (${interval})`]
+                result:"SUCCESS",
+                data:data[`Time Series (${interval})`]
             });
         }else{
+            failLog("GET", "time-series-intraday-data")
             res.status(400).json({
-                RESLUT:"FAIL",
-                ERROR:"Invalid API call"
+                result:"FAIL",
+                error:"Invalid API call"
             });
         }
     }catch(e){
-        res.status(400).json({ RESLUT:"FAIL", ERROR:e });
+        res.status(400).json({ result:"FAIL", error:e });
     }
     res.end();
 });
@@ -57,11 +57,32 @@ router.get("/time-series-intraday-data-extended-history", async (req, res) => {
      ;
     try{
         const { data } = await axios.get(url);
-        res.status(200).json({
-            DATA:data
+        if(!data["error"]){
+            const tokenizedData = data.split("\r\n"); tokenizedData.pop();
+            if(tokenizedData.length > 1){
+                const keyVal = tokenizedData[0].split(','); tokenizedData.shift();
+                successLog("GET", "time-series-intraday-data-extended-history");
+                res.status(200).json({
+                    result:"SUCCESS",
+                    data:tokenizedData.map(e => {
+                        const obj = {}; e = e.split(',');
+                        for(let index = 0; index < e.length; index++){
+                            obj[keyVal[index]] = e[index];
+                        }
+                        return obj;
+                    })
+                });
+                res.end();
+                return;
+            }
+        }
+        failLog("GET", "time-series-intraday-data-extended-history");
+        res.status(400).json({
+            RESLUT:"FAIL",
+            ERROR:"Invalid API call"
         });
     }catch(e){
-        console.log(e);
+        res.status(400).json({ RESLUT:"FAIL", ERROR:e });
     }
     res.end();
 });
