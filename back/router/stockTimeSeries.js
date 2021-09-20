@@ -95,4 +95,46 @@ router.get("/time-series-intraday-data-extended-history", async (req, res) => {
     res.end();
 });
 
+/**
+ * SYMBOL: ticker e.g. AAPL, IBM, MSFT
+ * OUTPUTSIZE: in (compact, full)
+ */
+router.get("/time-series-daily", async (req, res) => {
+    const symbol = req.body.SYMBOL;
+    const outputsize = req.body.OUTPUTSIZE;
+    const url =
+     `${baseURL}?function=TIME_SERIES_DAILY&` +
+     `symbol=${symbol}&` +
+     `outputsize=${outputsize}&` +
+     `apikey=${apiKey}`
+     ;
+    try{
+        const { data } = await axios.get(url);
+        if(data["Time Series (Daily)"]){
+            const tsdData = data["Time Series (Daily)"];
+            successLog("GET", "time-series-daily");
+            res.status(200).json({
+                result:"SUCCESS",
+                data:[...Object.keys(tsdData).map(time => ({
+                        "time":time,
+                        "open":tsdData[time]["1. open"],
+                        "high":tsdData[time]["2. high"],
+                        "low":tsdData[time]["3. low"],
+                        "close":tsdData[time]["4. close"],
+                        "volume":tsdData[time]["5. volume"]
+                }))]
+            });
+        }else{
+            failLog("GET", "time-series-daily")
+            res.status(400).json({
+                result:"FAIL",
+                error:"Invalid API call"
+            });
+        }
+    }catch(e){
+        res.status(400).json({ RESLUT:"FAIL", ERROR:e });
+    }
+    res.end();
+});
+
 module.exports = router;
