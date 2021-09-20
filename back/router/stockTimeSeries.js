@@ -21,10 +21,18 @@ router.get("/time-series-intraday-data", async (req, res) => {
     try{
         const { data } = await axios.get(url);
         if(data[`Time Series (${interval})`]){
+            const tsiData = data[`Time Series (${interval})`];
             successLog("GET", "time-series-intraday-data");
             res.status(200).json({
                 result:"SUCCESS",
-                data:data[`Time Series (${interval})`]
+                data:[...Object.keys(tsiData).map(time => ({
+                        "time":time,
+                        "open":tsiData[time]["1. open"],
+                        "high":tsiData[time]["2. high"],
+                        "low":tsiData[time]["3. low"],
+                        "close":tsiData[time]["4. close"],
+                        "volume":tsiData[time]["5. volume"]
+                }))]
             });
         }else{
             failLog("GET", "time-series-intraday-data")
