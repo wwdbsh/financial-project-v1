@@ -137,4 +137,49 @@ router.get("/time-series-daily", async (req, res) => {
     res.end();
 });
 
+/**
+ * SYMBOL: ticker e.g. AAPL, IBM, MSFT
+ * OUTPUTSIZE: in (compact, full)
+ */
+router.get("/time-series-daily-adjusted", async (req, res) => {
+    const symbol = req.body.SYMBOL;
+    const outputsize = req.body.OUTPUTSIZE;
+    const url =
+     `${baseURL}?function=TIME_SERIES_DAILY_ADJUSTED&` +
+     `symbol=${symbol}&` +
+     `outputsize=${outputsize}&` +
+     `apikey=${apiKey}`
+     ;
+    try{
+        const { data } = await axios.get(url);
+        if(data["Time Series (Daily)"]){
+            const tsdData = data["Time Series (Daily)"];
+            successLog("GET", "time-series-daily-adjusted");
+            res.status(200).json({
+                result:"SUCCESS",
+                data:[...Object.keys(tsdData).map(date => ({
+                        "time":date,
+                        "open":tsdData[date]["1. open"],
+                        "high":tsdData[date]["2. high"],
+                        "low":tsdData[date]["3. low"],
+                        "close":tsdData[date]["4. close"],
+                        "adjusted-close":tsdData[date]["5. adjusted close"],
+                        "volume":tsdData[date]["6. volume"],
+                        "dividend-amount":tsdData[date]["7. dividend amount"],
+                        "split-coefficient":tsdData[date]["8. split coefficient"]
+                }))]
+            });
+        }else{
+            failLog("GET", "time-series-daily-adjusted")
+            res.status(400).json({
+                result:"FAIL",
+                error:"Invalid API call"
+            });
+        }
+    }catch(e){
+        res.status(400).json({ RESLUT:"FAIL", ERROR:e });
+    }
+    res.end();
+});
+
 module.exports = router;
