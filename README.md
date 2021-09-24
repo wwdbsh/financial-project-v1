@@ -9,3 +9,4 @@
 * time-series-weekly
 * time-series-weekly-adjusted
 * time-series-monthly
+* time-series-monthly-adjusted
