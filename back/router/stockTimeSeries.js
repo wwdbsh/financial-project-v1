@@ -188,10 +188,10 @@ router.get("/time-series-daily-adjusted", async (req, res) => {
 router.get("/time-series-weekly", async (req, res) => {
     const symbol = req.body.SYMBOL;
     const url =
-    `${baseURL}?function=TIME_SERIES_WEEKLY&` +
-    `symbol=${symbol}&` +
-    `apikey=${apiKey}`
-    ;
+     `${baseURL}?function=TIME_SERIES_WEEKLY&` +
+     `symbol=${symbol}&` +
+     `apikey=${apiKey}`
+     ;
     try{
         const { data } = await axios.get(url);
         if(data["Weekly Time Series"]){
@@ -210,6 +210,45 @@ router.get("/time-series-weekly", async (req, res) => {
             });
         }else{
             failLog("GET", "time-series-weekly")
+            res.status(400).json({
+                result:"FAIL",
+                error:"Invalid API call"
+            });
+        }
+    }catch(e){
+        res.status(400).json({ RESLUT:"FAIL", ERROR:e });
+    }
+    res.end();
+});
+
+router.get("/time-series-weekly-adjusted", async (req, res) => {
+    const symbol = req.body.SYMBOL;
+    const url =
+     `${baseURL}?function=TIME_SERIES_WEEKLY_ADJUSTED&` +
+     `symbol=${symbol}&` +
+     `apikey=${apiKey}`
+     ;
+    try{
+        const { data } = await axios.get(url);
+        if(data["Weekly Adjusted Time Series"]){
+            const tsdData = data["Weekly Adjusted Time Series"];
+            successLog("GET", "time-series-weekly-adjusted");
+            res.status(200).json({
+                result:"SUCCESS",
+                data:[...Object.keys(tsdData).map(date => ({
+                        "date":date,
+                        "open":tsdData[date]["1. open"],
+                        "high":tsdData[date]["2. high"],
+                        "low":tsdData[date]["3. low"],
+                        "close":tsdData[date]["4. close"],
+                        "adjusted-close":tsdData[date]["5. adjusted close"],
+                        "volume":tsdData[date]["6. volume"],
+                        "dividend-amount":tsdData[date]["7. dividend amount"],
+                        "split-coefficient":tsdData[date]["8. split coefficient"]
+                }))]
+            });
+        }else{
+            failLog("GET", "time-series-weekly-adjusted")
             res.status(400).json({
                 result:"FAIL",
                 error:"Invalid API call"
