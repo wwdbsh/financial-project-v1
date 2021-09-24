@@ -221,6 +221,9 @@ router.get("/time-series-weekly", async (req, res) => {
     res.end();
 });
 
+/**
+ * SYMBOL: ticker e.g. AAPL, IBM, MSFT
+ */
 router.get("/time-series-weekly-adjusted", async (req, res) => {
     const symbol = req.body.SYMBOL;
     const url =
@@ -249,6 +252,45 @@ router.get("/time-series-weekly-adjusted", async (req, res) => {
             });
         }else{
             failLog("GET", "time-series-weekly-adjusted")
+            res.status(400).json({
+                result:"FAIL",
+                error:"Invalid API call"
+            });
+        }
+    }catch(e){
+        res.status(400).json({ RESLUT:"FAIL", ERROR:e });
+    }
+    res.end();
+});
+
+/**
+ * SYMBOL: ticker e.g. AAPL, IBM, MSFT
+ */
+ router.get("/time-series-monthly", async (req, res) => {
+    const symbol = req.body.SYMBOL;
+    const url =
+     `${baseURL}?function=TIME_SERIES_MONTHLY&` +
+     `symbol=${symbol}&` +
+     `apikey=${apiKey}`
+     ;
+    try{
+        const { data } = await axios.get(url);
+        if(data["Monthly Time Series"]){
+            const tsdData = data["Monthly Time Series"];
+            successLog("GET", "time-series-monthly");
+            res.status(200).json({
+                result:"SUCCESS",
+                data:[...Object.keys(tsdData).map(date => ({
+                        "date":date,
+                        "open":tsdData[date]["1. open"],
+                        "high":tsdData[date]["2. high"],
+                        "low":tsdData[date]["3. low"],
+                        "close":tsdData[date]["4. close"],
+                        "volume":tsdData[date]["5. volume"]
+                }))]
+            });
+        }else{
+            failLog("GET", "time-series-monthly")
             res.status(400).json({
                 result:"FAIL",
                 error:"Invalid API call"
