@@ -1,6 +1,6 @@
 ## Financial Applicaiton v1 (stock)
 
-### backend API
+### Backend API
 
 * time-series-intraday-data
 * time-series-intraday-data-extended-history
@@ -10,3 +10,4 @@
 * time-series-weekly-adjusted
 * time-series-monthly
 * time-series-monthly-adjusted
+* global-quotes
