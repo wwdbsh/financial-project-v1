@@ -1,15 +1,17 @@
 const { baseURL, router, axios, apiKey, successLog, failLog } = require("../util/common");
 
-router.get('/', function(req, res) {
-    res.send("stock time series");
-    res.end();
-});
+router.get('/', (req, res) => res.send("stock time series").end());
+router.get("/time-series-intraday-data", async (req, res) => requestIntradayData(req, res)); // [PARAMETERS] SYMBOL: ticker e.g. AAPL, IBM, MSFT | INTERVAL: in (1min, 5min, 15min, 30min, 60min)
+router.get("/time-series-intraday-data-extended-history", async (req, res) => requestIntradayHistoryData(req, res)); // [PARAMETERS] SYMBOL: ticker e.g. AAPL, IBM, MSFT | INTERVAL: in (1min, 5min, 15min, 30min, 60min) | SLICE: in (year1month1, year1month2, year1month3, ..., year1month11, year1month12, year2month1, year2month2, year2month3, ..., year2month11, year2month12)
+router.get("/time-series-daily", async (req, res) => requestDailyData(req, res)); // [PARAMETERS] SYMBOL: ticker e.g. AAPL, IBM, MSFT | OUTPUTSIZE: in (compact, full)
+router.get("/time-series-daily-adjusted", async (req, res) => requestDailyAdjustedData(req, res)); // [PARAMETERS] SYMBOL: ticker e.g. AAPL, IBM, MSFT | OUTPUTSIZE: in (compact, full)
+router.get("/time-series-weekly", async (req, res) => requestTimeSeriesData(req, res, "TIME_SERIES_WEEKLY", "Weekly Time Series", "time-series-weekly")); // [PARAMETERS] SYMBOL: ticker e.g. AAPL, IBM, MSFT
+router.get("/time-series-weekly-adjusted", async (req, res) => requestTimeSeriesAdjustedData(req, res, "TIME_SERIES_WEEKLY_ADJUSTED", "Weekly Adjusted Time Series", "time-series-weekly-adjusted")); // [PARAMETERS] SYMBOL: ticker e.g. AAPL, IBM, MSFT
+router.get("/time-series-monthly", async (req, res) => requestTimeSeriesData(req, res, "TIME_SERIES_MONTHLY", "Monthly Time Series", "time-series-monthly")); // [PARAMETERS] SYMBOL: ticker e.g. AAPL, IBM, MSFT
+router.get("/time-series-monthly-adjusted", async (req, res) => requestTimeSeriesAdjustedData(req, res, "TIME_SERIES_MONTHLY_ADJUSTED", "Monthly Adjusted Time Series", "time-series-monthly-adjusted")); // [PARAMETERS] SYMBOL: ticker e.g. AAPL, IBM, MSFT
+router.get("/global-quotes", async (req, res) => requestGlobalQuotes(req, res, "Global Quote", "global-quotes")); // [PARAMETERS] SYMBOL: ticker e.g. AAPL, IBM, MSFT
 
-/* [PARAMETERS]
- * SYMBOL: ticker e.g. AAPL, IBM, MSFT
- * INTERVAL: in (1min, 5min, 15min, 30min, 60min)
- */
-router.get("/time-series-intraday-data", async (req, res) => {
+const requestIntradayData = async (req, res) => {
     const symbol = req.body.SYMBOL;
     const interval = req.body.INTERVAL;
     const url =
@@ -45,14 +47,9 @@ router.get("/time-series-intraday-data", async (req, res) => {
         res.status(400).json({ result:"FAIL", error:e });
     }
     res.end();
-});
+};
 
-/* [PARAMETERS]
- * SYMBOL: ticker e.g. AAPL, IBM, MSFT
- * INTERVAL: in (1min, 5min, 15min, 30min, 60min)
- * SLICE: in (year1month1, year1month2, year1month3, ..., year1month11, year1month12, year2month1, year2month2, year2month3, ..., year2month11, year2month12)
- */
-router.get("/time-series-intraday-data-extended-history", async (req, res) => {
+const requestIntradayHistoryData = async (req, res) => {
     const symbol = req.body.SYMBOL;
     const interval = req.body.INTERVAL;
     const slice = req.body.SLICE;
@@ -93,13 +90,9 @@ router.get("/time-series-intraday-data-extended-history", async (req, res) => {
         res.status(400).json({ RESLUT:"FAIL", ERROR:e });
     }
     res.end();
-});
+};
 
-/* [PARAMETERS]
- * SYMBOL: ticker e.g. AAPL, IBM, MSFT
- * OUTPUTSIZE: in (compact, full)
- */
-router.get("/time-series-daily", async (req, res) => {
+const requestDailyData = async (req, res) => {
     const symbol = req.body.SYMBOL;
     const outputsize = req.body.OUTPUTSIZE;
     const url =
@@ -135,13 +128,9 @@ router.get("/time-series-daily", async (req, res) => {
         res.status(400).json({ RESLUT:"FAIL", ERROR:e });
     }
     res.end();
-});
+};
 
-/* [PARAMETERS]
- * SYMBOL: ticker e.g. AAPL, IBM, MSFT
- * OUTPUTSIZE: in (compact, full)
- */
-router.get("/time-series-daily-adjusted", async (req, res) => {
+const requestDailyAdjustedData = async (req, res) => {
     const symbol = req.body.SYMBOL;
     const outputsize = req.body.OUTPUTSIZE;
     const url =
@@ -180,16 +169,7 @@ router.get("/time-series-daily-adjusted", async (req, res) => {
         res.status(400).json({ RESLUT:"FAIL", ERROR:e });
     }
     res.end();
-});
-
-/* [PARAMETERS]
- * SYMBOL: ticker e.g. AAPL, IBM, MSFT
- */
-router.get("/time-series-weekly", async (req, res) => requestTimeSeriesData(req, res, "TIME_SERIES_WEEKLY", "Weekly Time Series", "time-series-weekly"));
-router.get("/time-series-weekly-adjusted", async (req, res) => requestTimeSeriesAdjustedData(req, res, "TIME_SERIES_WEEKLY_ADJUSTED", "Weekly Adjusted Time Series", "time-series-weekly-adjusted"));
-router.get("/time-series-monthly", async (req, res) => requestTimeSeriesData(req, res, "TIME_SERIES_MONTHLY", "Monthly Time Series", "time-series-monthly"));
-router.get("/time-series-monthly-adjusted", async (req, res) => requestTimeSeriesAdjustedData(req, res, "TIME_SERIES_MONTHLY_ADJUSTED", "Monthly Adjusted Time Series", "time-series-monthly-adjusted"));
-router.get("/global-quotes", async (req, res) => requestGlobalQuotes(req, res, "Global Quote", "global-quotes"));
+};
 
 const requestGlobalQuotes = async (req, res, key, endpoint) => {
     const symbol = req.body.SYMBOL;
